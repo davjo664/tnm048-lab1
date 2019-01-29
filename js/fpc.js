@@ -23,7 +23,7 @@ function focusPlusContext(data) {
      * After that, append the two g tags we will be using for drawing the focus plus context graphs
      */
     var svg = d3.select("#scatterplot").append("svg")
-        .attr("postion", "relative")
+        .attr("position", "relative")
         .attr("width", "100%")
         .attr("height", height + margin.top + margin.bottom);
 
@@ -76,7 +76,7 @@ function focusPlusContext(data) {
     /**
      * Task 4 - Define the brush for the context graph (Navigation)
      */
-    var brush = d3.brushX().extent([0, 0], [width, height2]).on("brush end", brushed);
+    var brush = d3.brushX().extent([[0, 0], [width, height2]]).on("brush end", brushed);
 
 
     //Setting scale parameters
@@ -120,7 +120,10 @@ function focusPlusContext(data) {
      * Task 7 - Plot the small dots on the context graph.
      */
     small_points = dots.selectAll("dot")
-        //here...
+        .data(data.features)
+        .enter()
+        .append("circle")
+        .attr("class", "dotContext")
         .filter(function (d) { return d.properties.EQ_PRIMARY != null })
         .attr("cx", function (d) {
             return navXScale(parseDate(d.properties.Date));
@@ -128,11 +131,18 @@ function focusPlusContext(data) {
         .attr("cy", function (d) {
             return navYScale(d.properties.EQ_PRIMARY);
         });
+        
     
      /**
       * Task 8 - Call plot function.
       * plot(points,nr,nr) try to use different numbers for the scaling.  
       */
+
+    console.log(small_points);
+    var points_func = new Points();
+    
+    points_func.plot(small_points,1,2);
+    
     
 
     //<---------------------------------------------------------------------------------------------------->
@@ -149,9 +159,14 @@ function focusPlusContext(data) {
      * Task 10 - Call x and y axis
      */
     focus.append("g")
-    //here..
+        .attr("class", "axis axis--x")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
     focus.append("g")
-    //here..
+        .attr("class", "axis axis-y")
+        .call(yAxis);
+  
     
     //Add y axis label to the scatter plot
     d3.select(".legend")
@@ -171,7 +186,11 @@ function focusPlusContext(data) {
      * Task 11 - Plot the dots on the focus graph.
      */
     selected_dots = dots.selectAll("dot")
-        //here..
+        .data(data.features)
+        .enter()
+        .append("circle")
+        .attr("class", "dot")
+        .attr("style", "opacity: 0.9;")
         .filter(function (d) { return d.properties.EQ_PRIMARY != null })
         .attr("cx", function (d) {
             return xScale(parseDate(d.properties.Date));
@@ -184,6 +203,7 @@ function focusPlusContext(data) {
      * Task 12 - Call plot function 
      * plot(points,nr,nr) no need to send any integers!
      */
+    points_func.plot(selected_dots, 1, 2);
 
     //<---------------------------------------------------------------------------------------------------->
 
@@ -200,7 +220,7 @@ function focusPlusContext(data) {
             /**
              * Task 13 - Update information in the "tooltip" by calling the tooltip function.
              */
-            
+            points_func.tooltip(d);            
 
             //Rescale the dots onhover
             d3.select(this).attr('r', 15)
@@ -257,7 +277,12 @@ function focusPlusContext(data) {
      * implmented if we put the brush before. 
      */
 
-    //here..
+    context.append("g")
+        .attr("class", "brush")
+        .call(brush)
+        .call(brush.move, xScale.range());
+
+    
     
     //<---------------------------------------------------------------------------------------------------->
 
@@ -289,7 +314,7 @@ function focusPlusContext(data) {
             /**
              * Remove comment for updating dots on the map.
              */
-            //curr_points_view = world_map.change_map_points(curr_view_erth)
+            curr_points_view = world_map.change_map_points(curr_view_erth)
         }
     }
 
